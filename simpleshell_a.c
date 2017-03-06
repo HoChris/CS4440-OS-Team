@@ -12,8 +12,12 @@ int main(void)
 	char *split;
 	char *history[MAX_LINE];
 	int historyC=0;
+	int cNumber = 0;										/* the number for the number cmd */
 	int entry = 0;
 	int should_run = 1;                 /* flag to determine when to exit program */
+	int goCmd = 0;              /* flag for last cmd movedflags */
+    int goNumberCmd = 0;       /* flag for number cmd */
+	int status = 0;
 
 	while (should_run){
 		printf("osh>");
@@ -28,8 +32,6 @@ int main(void)
 		split=strtok(userInput," ");
 		int argc=0;
 		
-        int goCmd = 0;              /* flag for last cmd */
-        int goNumberCmd = 0;       /* flag for number cmd */
 		while (split != NULL)
 		{
 			/* The array to store the history of the commands was initially
@@ -42,16 +44,24 @@ int main(void)
 			 */
 			if(split[0] == '!' && split[1] == '!'){                      /* Checks for "!!" to execute lastCmd */
 			    if(history == NULL || history[0] == NULL){                  /* if no history */
-			        puts("No commands in history.");
+			        puts("No commands in history.\n");
 			    }
 			    else{
-			        goCmd = 1;
-					history[historyC] = args[argc];						/*copys array and place into history*/
+			        goCmd = 1;					//flag on
+					history[historyC] = args[argc];						/*copys and place into history*/
 			    }
 			}
-			else if (split[0] == '!' && isdigit(split[1]) != 0){         /* grabs the cmd number to execute */
-			     goNumberCmd = 1;
+			else if (split[0] == '!' && split[1] != '!'){         
+			//else if (split[0] == '!' && isdigit(split[1]) != 0){         /* grabs the cmd number to execute */
+			     cNumber = atoi(&split[1]);
+				 if(cNumber >= entry)
+					 puts("No such command in history\n");
+				 else{
+				 goNumberCmd = 1;				//flag on
+				 printf("--- %d --- \n", cNumber);
+				 history[cNumber] = args[argc];	//changed from cNumber to argc
 				 /*NOT DONE YET*/
+				 }
 			}
 			if (split[0] == '-')
 				history[--entry] = ' ' + strdup(split);					/* this is placing its own spot in history -l*/
@@ -66,10 +76,6 @@ int main(void)
 		                            
 		}
 		args[argc]=NULL;
-
-	/*	for(counter;counter<historyC;counter++)
-	*		printf("%s\n",history[counter]);	*/
-		
 		
 		if(strcmp("exit",args[0])==0){
 			should_run=0;
@@ -82,33 +88,39 @@ int main(void)
 			}
 		}
 		
-		/* After reading user input, the steps are:
-		* (1) fork a child process using fork()
-		* (2) the child process will invoke execvp()
-		* (3) if command included &, parent will invoke wait() */
-		
-		/* Did you guys see Professor Thomas' post in the forum?
-		 * All the forking is crashing cs1. She said to do without
-		 * when testing, but it's still supposed to be in the final
-		 * code that we turn in? */
 		else{
 			pid_t pid, wpid;
-			int status;
-			pid = fork();
+			//pid = fork();
 			/* added for possibility of failed fork */
 			if (pid < 0) {
 				perror("Fork failed.\n");
 				exit(1);
 			}
-			else if (pid==0 && goCmd ==0){ 
-				execvp(args[0],args);
-			/*	if(userInput[length-1] == '&')
+//			else if (pid==0 && goCmd ==0){ 
+//				execvp(args[0],args);
+//			/*	if(userInput[length-1] == '&')
 			*		wpid = wait(&status);		*/
+//			}
+			else if ((pid = fork()) ==0){ 
+				if(goCmd <= 0 || goNumberCmd <= 0)
+					execvp(args[0],args);
+				else if( goCmd > 0){
+					printf("%s \n", history[historyC]);   				/* prints lastCmd */
+					goCmd = 0;  
+					execvp(history[historyC],args);  
+				}
+				//<<<<<<<<<<<<<<<<<<<<started moving ifelses to more condence version play with wpid and pid	
+				
 			}
 			else if (pid==0 && goCmd ==1){                         /* added lastCmd checks */
-				printf("%s \n", history[historyC]);                     /* prints lastCmd */
-				execvp(history[historyC],args);  
+				printf("%s \n", history[historyC]);   				/* prints lastCmd */
 				goCmd = 0;  
+				execvp(history[historyC],args);  
+			}
+			else if (pid==0 && goNumberCmd ==1){                         /* added Number Cmd checks */
+				printf("%s \n", history[cNumber]);
+				goNumberCmd = 0;  				/* prints Number Cmd  */
+				execvp(history[cNumber],args);  
 			}
 			else {
 				wait(NULL);
@@ -116,5 +128,6 @@ int main(void)
 			}
 		}
 	}
+	
 	return 0;
 }
