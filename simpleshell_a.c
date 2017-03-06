@@ -77,7 +77,7 @@ int main(void)
 		}
 		else if(strcmp("history",args[0])==0){                   /* added history cmd to print table */
 		    int i = 0;
-			for(i;i<entry;i++){									//needs to cut off to 10
+			for(i=entry-1;i>=0;--i){									//needs to cut off to 10
 				printf("%d - %s\n",i+1, history[i]);
 			}
 		}
