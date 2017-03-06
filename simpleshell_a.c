@@ -15,7 +15,7 @@ int main(void)
 	int entry = 0;
 	int should_run = 1;                 /* flag to determine when to exit program */
 
-	while (should_run) {
+	while (should_run){
 		printf("osh>");
 		fflush(stdout);
 		
@@ -41,19 +41,20 @@ int main(void)
 			 * with a dash needs to be put with the word before it.
 			 */
 			if(split[0] == '!' && split[1] == '!'){                      /* Checks for "!!" to execute lastCmd */
-			    if(history == NULL || history[0] == 0){                  /* if no history */
+			    if(history == NULL || history[0] == NULL){                  /* if no history */
 			        puts("No commands in history.");
 			    }
 			    else{
 			        goCmd = 1;
+					history[historyC] = args[argc];						/*copys array and place into history*/
 			    }
 			}
 			else if (split[0] == '!' && isdigit(split[1]) != 0){         /* grabs the cmd number to execute */
 			     goNumberCmd = 1;
 				 /*NOT DONE YET*/
 			}
-			else if (split[0] == '-')
-				history[--entry] = ' ' + strdup(split);
+			if (split[0] == '-')
+				history[--entry] = ' ' + strdup(split);					/* this is placing its own spot in history -l*/
 			else
 				history[entry] = strdup(split);
 			entry++;
@@ -72,13 +73,13 @@ int main(void)
 		
 		if(strcmp("exit",args[0])==0){
 			should_run=0;
-		    exit(0);                    /* added exit here too */
+			exit(0);
 		}
-		
-		if(strcmp("history",args[0])==0){                   /* added history cmd to print table */
+		else if(strcmp("history",args[0])==0){                   /* added history cmd to print table */
 		    int i = 0;
-			for(i;i<historyC;i++)
-			printf("%s\n",history[i]);
+			for(i;i<entry;i++){									//needs to cut off to 10
+				printf("%d - %s\n",i+1, history[i]);
+			}
 		}
 		
 		/* After reading user input, the steps are:
@@ -90,28 +91,29 @@ int main(void)
 		 * All the forking is crashing cs1. She said to do without
 		 * when testing, but it's still supposed to be in the final
 		 * code that we turn in? */
-		pid_t pid, wpid;
-		int status;
-		pid = fork();
-		/* added for possibility of failed fork */
-		if (pid < 0) {
-			perror("Fork failed.\n");
-			exit(1);
-		}
-		else if (pid==0 && goCmd ==0){ 
-			execvp(args[0],args);
-		/*	if(userInput[length-1] == '&')
-		*		wpid = wait(&status);		*/
-		}
-		else if (pid==0 && goCmd ==1){                         /* added lastCmd checks */
-		    printf("The last CMD.\n");
-		    printf("%s \n", args[historyC]);                     /* prints lastCmd */
-		    execvp(args[historyC],args);
-		    goCmd = 0;         
-		}
-		else {
-			wait(NULL);
-			printf("Child Complete\n");
+		else{
+			pid_t pid, wpid;
+			int status;
+			pid = fork();
+			/* added for possibility of failed fork */
+			if (pid < 0) {
+				perror("Fork failed.\n");
+				exit(1);
+			}
+			else if (pid==0 && goCmd ==0){ 
+				execvp(args[0],args);
+			/*	if(userInput[length-1] == '&')
+			*		wpid = wait(&status);		*/
+			}
+			else if (pid==0 && goCmd ==1){                         /* added lastCmd checks */
+				printf("%s \n", history[historyC]);                     /* prints lastCmd */
+				execvp(history[historyC],args);  
+				goCmd = 0;  
+			}
+			else {
+				wait(NULL);
+				printf("Child Complete\n");
+			}
 		}
 	}
 	return 0;
