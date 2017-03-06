@@ -96,22 +96,23 @@ int main(void)
 				perror("Fork failed.\n");
 				exit(1);
 			}
-//			else if (pid==0 && goCmd ==0){ 
-//				execvp(args[0],args);
+			else if (pid==0 && goCmd ==0){ 
+				execvp(args[0],args);
 //			/*	if(userInput[length-1] == '&')
-			*		wpid = wait(&status);		*/
+//					wpid = wait(&status);		*/
 //			}
-			else if ((pid = fork()) ==0){ 
+/*			else if ((pid = fork()) ==0){ 
 				if(goCmd <= 0 || goNumberCmd <= 0)
 					execvp(args[0],args);
 				else if( goCmd > 0){
-					printf("%s \n", history[historyC]);   				/* prints lastCmd */
+					printf("%s \n", history[historyC]);   				// prints lastCmd 
 					goCmd = 0;  
 					execvp(history[historyC],args);  
 				}
 				//<<<<<<<<<<<<<<<<<<<<started moving ifelses to more condence version play with wpid and pid	
 				
-			}
+			} */
+
 			else if (pid==0 && goCmd ==1){                         /* added lastCmd checks */
 				printf("%s \n", history[historyC]);   				/* prints lastCmd */
 				goCmd = 0;  
