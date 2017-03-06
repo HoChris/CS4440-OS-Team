@@ -90,7 +90,7 @@ int main(void)
 		
 		else{
 			pid_t pid, wpid;
-			//pid = fork();
+			pid = fork();
 			/* added for possibility of failed fork */
 			if (pid < 0) {
 				perror("Fork failed.\n");
