@@ -98,9 +98,9 @@ int main(void)
 			}
 			else if (pid==0 && goCmd ==0){ 
 				execvp(args[0],args);
-//			/*	if(userInput[length-1] == '&')
-//					wpid = wait(&status);		*/
-//			}
+			/*	if(userInput[length-1] == '&')
+					wpid = wait(&status);		*/
+			}
 /*			else if ((pid = fork()) ==0){ 
 				if(goCmd <= 0 || goNumberCmd <= 0)
 					execvp(args[0],args);
